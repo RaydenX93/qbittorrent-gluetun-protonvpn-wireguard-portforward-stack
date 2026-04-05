@@ -24,3 +24,7 @@ Tools → Options → WebUI → "Bypass authentication for clients on localhost"
 Without this option, qBittorrent will reject the API calls coming from Gluetun (127.0.0.1), and port forwarding WILL NOT WORK.
 
 This needs to be done only on first launch.
+
+# Credits
+- https://github.com/soxfor/qbittorrent-natmap/issues/28#issuecomment-2963233772
+- https://github.com/qdm12/gluetun-wiki/blob/main/setup/advanced/vpn-port-forwarding.md
