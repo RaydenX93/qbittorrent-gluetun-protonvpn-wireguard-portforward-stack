@@ -14,7 +14,8 @@ chmod +x qbittorrent_healthcheck.sh
 3. Get your Proton VPN Wireguard API Key from: https://account.proton.me/u/0/vpn/WireGuard
 3. Rename `.env.example` to `.env` and add your Proton VPN Wireguard API Key there
 4. Customize any other environmental variables that you like.
-5. Run `docker compose pull` and `docker compose up -d`
+5. Customize qBittorrent volumes in `docker-compose.yml`
+6. Run `docker compose pull` and `docker compose up -d`
 
 # Important note for qBittorrent
 To allow Gluetun to automatically update the listening port using the scripts provided, you MUST enable the following option inside qBittorrent:
