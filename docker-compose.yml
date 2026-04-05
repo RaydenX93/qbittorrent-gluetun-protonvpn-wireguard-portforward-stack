@@ -82,9 +82,7 @@ services:
 
     volumes:
       - ./qbittorrent/config:/config
-      - /mnt/sdb2/Downloads:/Downloads
-      - /mnt/sdb2/SerieTV:/SerieTV
-      - /mnt/sdb2/Film:/Film
+      - ./qbittorrent/downloads:/downloads
 
       # Healthcheck script
       - ./qbittorrent_healthcheck.sh:/qbittorrent_healthcheck.sh:ro
