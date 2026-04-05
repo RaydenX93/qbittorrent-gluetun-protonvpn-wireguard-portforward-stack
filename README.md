@@ -1,7 +1,7 @@
 # qbittorrent-gluetun-protonvpn-wireguard-portforward-stack
 A simple Docker compose stack which runs qBittorrent through Gluetun (configured with ProtonVPN over Wireguard with automatic port forward)
 
-qBittorrent will run on port `8080`
+qBittorrent WebUI will run on port `8080`
 
 # How to install
 1. Copy the files in this repository in your desired folder (i.e. ./opt/Docker/qBittorrent)
