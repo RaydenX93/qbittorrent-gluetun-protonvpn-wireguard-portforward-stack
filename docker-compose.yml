@@ -1,0 +1,100 @@
+services:
+  gluetun:
+    image: ghcr.io/qdm12/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
+    volumes:
+      # Mount only the scripts
+      - ./port_up.sh:/port_up.sh:ro
+      - ./port_down.sh:/port_down.sh:ro
+
+      # Gluetun internal state directory
+      - ./gluetun:/gluetun
+
+    ports:
+      - 8080:8080/tcp   # qBittorrent WebUI
+
+    # Internal-only Gluetun API (NOT exposed to host)
+    expose:
+      - 8000
+
+    environment:
+      # --- Gluetun Authentication disabled as it is not exposed outside ---
+      - HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE={"auth":"none"}
+
+      # --- ProtonVPN + WireGuard ---
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
+      
+       # --- Let's give the guys a hand... (https://github.com/qdm12/gluetun) ---
+      - BORINGPOLL_GLUETUNCOM=on
+
+      # --- Port Forwarding ---
+      - VPN_PORT_FORWARDING=on
+      - PORT_FORWARD_ONLY=on
+
+      # External scripts
+      # https://github.com/qdm12/gluetun-wiki/blob/main/setup/advanced/vpn-port-forwarding.md
+      - VPN_PORT_FORWARDING_UP_COMMAND=/port_up.sh {{PORT}} {{VPN_INTERFACE}}
+      - VPN_PORT_FORWARDING_DOWN_COMMAND=/port_down.sh
+
+      # Timezone
+      - TZ=${TZ}
+
+    restart: unless-stopped
+
+  ###########################################################################
+  # IMPORTANT NOTE FOR QBITTORRENT:
+  #
+  # To allow Gluetun to automatically update the listening port using the
+  # port_up.sh and port_down.sh scripts, you MUST enable the following option
+  # inside qBittorrent:
+  #
+  #   Tools → Options → WebUI →
+  #   "Bypass authentication for clients on localhost"
+  #
+  # Without this option, qBittorrent will reject the API calls coming from
+  # Gluetun (127.0.0.1), and port forwarding WILL NOT WORK.
+  ###########################################################################
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+
+    # Shares network namespace with Gluetun
+    network_mode: "service:gluetun"
+
+    depends_on:
+      gluetun:
+        condition: service_healthy
+
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=8080
+
+    volumes:
+      - ./qbittorrent/config:/config
+      - /mnt/sdb2/Downloads:/Downloads
+      - /mnt/sdb2/SerieTV:/SerieTV
+      - /mnt/sdb2/Film:/Film
+
+      # Healthcheck script
+      - ./qbittorrent_healthcheck.sh:/qbittorrent_healthcheck.sh:ro
+
+    # Checks port sync with Gluetun API
+    healthcheck:
+      test: ["CMD-SHELL", "/qbittorrent_healthcheck.sh"]
+      interval: 300s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    restart: unless-stopped
