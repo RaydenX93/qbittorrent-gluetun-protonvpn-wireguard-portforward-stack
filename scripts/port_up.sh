@@ -11,8 +11,8 @@ done
 
 echo "PortUpdateScript: qBittorrent is ready. Setting listening port to $PORT"
 
-wget -O- -nv --retry-connrefused \
-  --post-data "json={\"listen_port\":${PORT},\"current_network_interface\":\"${IFACE}\",\"random_port\":false,\"upnp\":false}" \
+wget -qO- \
+  --post-data="json={\"listen_port\":${PORT},\"current_network_interface\":\"${IFACE}\",\"random_port\":false,\"upnp\":false}" \
   http://127.0.0.1:8080/api/v2/app/setPreferences
 
 echo "PortUpdateScript: Port updated successfully."
